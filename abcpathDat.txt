@@ -1,0 +1,3 @@
+param	R:=5;
+param	C:=5;
+param	L:=25;

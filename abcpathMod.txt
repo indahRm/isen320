@@ -1,0 +1,24 @@
+param	R;
+param	C;
+param	L;
+param	r{i in 1..R, k in 1..L};			# r[i,k]==1 if the k-th letter must be placed in the i-th row
+param	c{j in 1..C, k in 1..L};			# c[j,k]==1 if the k-th letter must be placed in the j-th row
+param	d{k in 1..L};		# d[k]==1 if the k-th letter must be placed in the diagonal spanning from top-left to bottom-right
+param	e{k in 1..L};		# e[k]==1 if the k-th letter must be placed in the diagonal spanning from top-right to bottom-left
+param	x{i in 1..R, j in 1..C, k in 1};		# x[i,j,1]==1 if the letter A is in the i-th row and j-th column
+
+
+var	x{i in 1..R, j in 1..C, k in 2..L} binary;			# x[i,j,k]==1 if the k-th letter is in the i-th row and j-th column
+# CHECK: can x be both var and param?
+
+maximize Blue:	420	# feasibility function can have any arbitrary OF
+
+subject to		# constraints; pls see report for details on what they do
+first{i in 1..R, j in 1..C, k in 2..L}:	x[i,j,k]<= 1-x[i,j,k+1];
+second{i in 1..R, j in 1..C, k in 2..L}: sum{i in 1..R, j in 1..C} x[i,j,k]=1;
+third{b in 1..C, k in 2..L}: c[b,k] <= sum{i in 1..R} x[i,b,k];
+fourth{a in 1..R,k in 2..L}: r[a,k] <= sum{j in 1..C} x[a,j,k];
+fifth{a in 2...4, b in 2..4, k in 1..(L-1)}: x[a,b,k] <= sum{i in (a-1)..(a+1), j in (b-1)..(b+1)} x[i,j,k+1];
+sixth{a in 1..R, k in 1..(L-1)}: x[a,1,k] <= sum{i in (a-1)..(a+1)} x[i,1,k+1] + sum{i in (a-1)..(a+1)} x[i,2,k+1];
+seventh{a in 1..R, k in 1..(L-24)}: x[a,5,k] <= sum{i in (a-1)..(a+1)} x[i,5,k+1] + sum{i in (a-1)..(a+1)} x[i,4,k+1];
+eighth{b in 1..C, k in 1..(L-1)}: 
