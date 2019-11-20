@@ -1,30 +1,79 @@
-param	R;
-param	C;
-param	L;
+param	R;					# number of rows
+param	C;					# number of columns
+param	L;					# number of letters
 param	r{i in 1..R, k in 1..L};			# r[i,k]==1 if the k-th letter must be placed in the i-th row
 param	c{j in 1..C, k in 1..L};			# c[j,k]==1 if the k-th letter must be placed in the j-th row
 param	d{k in 1..L};		# d[k]==1 if the k-th letter must be placed in the diagonal spanning from top-left to bottom-right
 param	e{k in 1..L};		# e[k]==1 if the k-th letter must be placed in the diagonal spanning from top-right to bottom-left
-param	x{i in 1..R, j in 1..C, k in 1};		# x[i,j,1]==1 if the letter A is in the i-th row and j-th column
+param	A{i in 1..R, j in 1..C, k in 1..1};	# x[i,j,1]==1 if the letter A is in the i-th row and j-th column
 
 
-var	x{i in 1..R, j in 1..C, k in 2..L} binary;			# x[i,j,k]==1 if the k-th letter is in the i-th row and j-th column
+var	x{i in 1..R, j in 1..C, k in 1..L} binary;			# x[i,j,k]==1 if the k-th letter is in the i-th row and j-th column
 
 
-maximize objectiveFunction:	420	# feasibility function can have any arbitrary OF
+maximize objectiveFunction:	420;	# feasibility function can have any arbitrary OF
 
 
 subject to		# constraints
-first{i in 1..R, j in 1..C, k in 2..L}:	x[i,j,k]<= 1-x[i,j,k+1];	# curr letter is not in the same square as prev
-second{i in 1..R, j in 1..C}: sum{k in 1..25} x[i,j,k]= 1		# only one letter in each square
-third{i in 1..R, j in 1..C, k in 2..L}: sum{i in 1..R, j in 1..C} x[i,j,k]=1;	# each letter in only one square
-fourth{b in 1..C, k in 2..L}: c[b,k] <= sum{i in 1..R} x[i,b,k];		# letter in the correct col
-fifth{a in 1..R, k in 2..L}: r[a,k] <= sum{j in 1..C} x[a,j,k];		# letter in the correct row
-	# constraints regarding positioning in different sections of the board:
-sixth{a in 2..4, b in 2..4, k in 1..(L-1)}: x[a,b,k] <= sum{i in (a-1)..(a+1), j in (b-1)..(b+1)} x[i,j,k+1];		# middle section
-seventh{a in 1..R, k in 1..(L-1)}: x[a,1,k] <= sum{i in (a-1)..(a+1)} x[i,1,k+1] + sum{i in (a-1)..(a+1)} x[i,2,k+1];		# leftmost col
-eighth{a in 1..R, k in 1..(L-24)}: x[a,5,k] <= sum{i in (a-1)..(a+1)} x[i,5,k+1] + sum{i in (a-1)..(a+1)} x[i,4,k+1];		# rightmost col
-ninth{b in 1..C, k in 1..(L-1)}: x[1,b,k] <= sum{j in (b-1)..(b+1)} x[1,j,k+1] + sum{j in (b-1)..(b+1)} x[2,j,k+1];		# top row
-tenth{b in 1..C, k in 1..(L-1)}: x[5,b,k] <= sum{j in (b-1)..(b+1)} x[5,j,k+1] + sum{j in (b-1)..(b+1)} x[4,j,k+1];		# bottom row
-eleventh{a in 1..C, k in 1..L}: d[k] <= sum{i in 1..R} x[i,i,k];	# diag
-twelvth{a in 1..C, k in 1..L}: e[k] <= sum{i in 1..R} x[i,6-i,k];	# anti diag
+# curr letter is not in the same square as prev
+first{i in 1..R, j in 1..C, k in 1..(L-1)}:	x[i,j,k]<= 1-x[i,j,k+1];
+
+# only one letter in each square
+second{i in 1..R, j in 1..C}: sum{k in 1..L} x[i,j,k]= 1;
+
+# each letter in only one square
+third{k in 1..L}: sum{i in 1..R, j in 1..C} x[i,j,k]=1;
+
+# letter is in the correct col
+fourth{b in 1..C, k in 2..L}: c[b,k] <= sum{i in 1..R} x[i,b,k];
+
+# letter is in the correct row
+fifth{a in 1..R, k in 2..L}: r[a,k] <= sum{j in 1..C} x[a,j,k];
+
+# set the location of A in the DV x
+sixth{i in 1..R, j in 1..C, k in 1..1}: A[i,j,1] = x[i,j,1];
+
+# the constraints below regard positioning of the letters in different sections of the board:
+# middle section
+seventh{a in 2..(R-1), b in 2..(C-1), k in 1..(L-1)}: x[a,b,k]
+<= sum{i in (a-1)..(a+1), j in (b-1)..(b+1)} x[i,j,k+1];
+
+# leftmost col
+eighth{a in 2..(R-1), k in 1..(L-1)}: x[a,1,k]
+<= sum{i in (a-1)..(a+1)} x[i,1,k+1] + sum{i in (a-1)..(a+1)} x[i,2,k+1];
+
+# rightmost col
+ninth{a in 2..(R-1), k in 1..(L-1)}: x[a,5,k]
+<= sum{i in (a-1)..(a+1)} x[i,5,k+1] + sum{i in (a-1)..(a+1)} x[i,4,k+1];
+
+# top row
+tenth{b in 2..(C-1), k in 1..(L-1)}: x[1,b,k]
+<= sum{j in (b-1)..(b+1)} x[1,j,k+1] + sum{j in (b-1)..(b+1)} x[2,j,k+1];
+
+# bottom row
+eleventh{b in 2..(C-1), k in 1..(L-1)}: x[5,b,k]
+<= sum{j in (b-1)..(b+1)} x[5,j,k+1] + sum{j in (b-1)..(b+1)} x[4,j,k+1];
+
+# diagonal
+twelfth{a in 1..C, k in 1..L}: d[k] <= sum{i in 1..R} x[i,i,k];
+
+# anti-diagonal
+thirteenth{a in 1..C, k in 1..L}: e[k] <= sum{i in 1..R} x[i,6-i,k];
+
+# top-left corner
+fourteenth{i in 1..1, j in 1..1, k in 1..(L-1)}: x[1,1,k]
+<= x[1,2,k+1] + x[2,1,k+1] + x[2,2,k+1];
+
+# top right corner constraint
+fifteenth{i in 1..1, j in 5..5, k in 1..(L-1)}: x[1,5,k]
+<= x[1,4,k+1] + x[2,4,k+1] + x[2,5,k+1];
+
+# bottom left corner
+sixteenth{i in 5..5, j in 1..1, k in 1..(L-1)}: x[5,1,k]
+<= x[4,1,k+1] + x[4,2,k+1] + x[5,2,k+1];
+
+# bottom right corner
+seventeenth{i in 5..5, j in 5..5, k in 1..(L-1)}: x[5,5,k]
+<= x[4,4,k+1] + x[4,5,k+1] + x[5,4,k+1];
+
+
