@@ -9,9 +9,10 @@ param	x{i in 1..R, j in 1..C, k in 1};		# x[i,j,1]==1 if the letter A is in the 
 
 
 var	x{i in 1..R, j in 1..C, k in 2..L} binary;			# x[i,j,k]==1 if the k-th letter is in the i-th row and j-th column
-# CHECK: can x be both var and param?
+
 
 maximize objectiveFunction:	420	# feasibility function can have any arbitrary OF
+
 
 subject to		# constraints
 first{i in 1..R, j in 1..C, k in 2..L}:	x[i,j,k]<= 1-x[i,j,k+1];	# curr letter is not in the same square as prev

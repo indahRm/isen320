@@ -1,0 +1,23 @@
+param	R;
+param	C;
+param	bi{i in 1..R, j in 1..C};			# bi[i,j]==1 if the box in the i-th row and j-th column is initially blue
+param	wi{i in 1..R, j in 1..C};			# wi[i,j]==1 if the box in the i-th row and j-th column is initially white
+
+
+var	b{i in 1..R, j in 1..C} binary;			# b[i,j]==1 if the box in the i-th row and j-th column should be blue
+var	w{i in 1..R, j in 1..C} binary;			# w[i,j]==1 if the box in the i-th row and j-th column should be white
+
+
+maximize objectiveFunction:	0	# feasibility function can have any arbitrary OF
+
+
+subject to		# constraints
+#the first constraint is binary
+second{i in 1..R, j in 1..C}: bi[i,j] + wi[i,j] <= 1 - (b[i,j] + w[i,j]);		# initial white/blue arent changed
+third{i in 1..R, j in 1..C}: 1 - (bi[i,j] + wi[i,j]) <= b[i,j] + w[i,j];		# grey must be changed to blue or white
+fourth{j in 1..C}: sum{k in 1..(R-2)} bi[k,j] + b[k,j] < 3;			# at most 2 adjancent blue cells in col
+fifth{j in 1..C}: sum{k in 1..(R-2)} wi[k,j] + w[k,j] < 3;			# at most 2 adjacent white cells in col
+sixth{i in 1..R}: sum{k in 1..(C-2)} wi[i,k] + w[i,k] < 3;			# at most 2 adjancent white cells in row
+seventh{i in 1..R}: sum{k in 1..(C-2)} bi[i,k] + b[i,k] < 3;		# at most 2 adjacent blue cells in row
+eighth{j in 1..C}: sum{i in 1..R} (bi[i,j] + b[i,j]) = sum{i in 1..R} (wi[i,j] + w[i,j]); 		# equal white and blue in each column
+ninth{i in 1..R}: sum{j in 1..C} (bi[i,j] + b[i,j]) = sum{j in 1..C} (wi[i,j] + w[i,j]);		# equal white and blue in each row 
